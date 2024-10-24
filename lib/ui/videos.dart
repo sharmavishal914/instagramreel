@@ -2,6 +2,8 @@ import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:instagramreel/components/mainwidget.dart';
+import 'package:instagramreel/components/videoplayer.dart';
+import 'package:preload_page_view/preload_page_view.dart';
 import 'package:video_player/video_player.dart';
 
 class Reels extends StatefulWidget {
@@ -34,36 +36,32 @@ class _ReelsState extends State<Reels> {
     }
 
     return Scaffold(
-      body: Stack(
-        children: [
-          Container(color: Colors.black,),
-          Chewie(controller: chewie), // Video Player
-          const CommentWithPublisher(),
-          buildPosLikeComment()
-        ],
-      ),
+      body: PreloadPageView.builder(
+        scrollDirection: Axis.vertical,
+        controller: PreloadPageController(),
+        itemBuilder: (BuildContext context, int index) {  
+       return Stack(
+          children: [
+            Container(color: Colors.black,),
+            Videoplayer(url: 'https://flipfit-cdn.akamaized.net/flip_hls/661f570aab9d840019942b80-473e0b/video_h1.m3u8'), // Video Player
+            const CommentWithPublisher(),
+            buildPosLikeComment()
+          ],
+        );
+   }, ),
     );
   }
 
   void loadVideoClip() async {
     await videoPlayerController.initialize();
+    videoPlayerController.play();
   }
 
   @override
   void dispose() {
     videoPlayerController.dispose();
-    chewie.dispose();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: SystemUiOverlay.values);
     super.dispose();
   }
 
-  final chewie = ChewieController(
-    videoPlayerController: videoPlayerController,
-    autoPlay: true,
-    looping: true,
-    allowFullScreen: true,
-    autoInitialize: true,
-    cupertinoProgressColors: ChewieProgressColors(),
-
-  );
 }
