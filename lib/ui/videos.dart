@@ -47,6 +47,7 @@ class _ReelsState extends State<Reels> {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
     _pageController = PreloadPageController(initialPage: 0);
     videoUrls = [
+      'https://flipfit-cdn.akamaized.net/flip_hls/661f570aab9d840019942b80-473e0b/video_h1.m3u8',
       'https://cdn.pixabay.com/video/2022/07/24/125314-733046618_tiny.mp4',
       'https://cdn.pixabay.com/video/2022/09/19/131824-751934493_tiny.mp4',
       'https://cdn.pixabay.com/video/2022/10/04/133507-756991150_tiny.mp4',
