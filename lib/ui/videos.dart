@@ -13,55 +13,109 @@ class Reels extends StatefulWidget {
   _ReelsState createState() => _ReelsState();
 }
 
-final videoPlayerController = VideoPlayerController.networkUrl(
-    Uri.parse('https://flipfit-cdn.akamaized.net/flip_hls/661f570aab9d840019942b80-473e0b/video_h1.m3u8'));
-
 class _ReelsState extends State<Reels> {
+  int _currentPage = 0;
+  List<String> videoUrls = [];
+  final int _threshold = 2;
+  late PreloadPageController _pageController;
+
+  // @override
+  // void initState() {
+  //   SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
+  //   _pageController = PreloadPageController(initialPage: 0);
+  //   videoUrls = [
+  //     'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+  //     'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+  //     'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4',
+  //   ];
+  //   super.initState();
+  // }
+  //
+  // void _loadMoreVideos() {
+  //   List<String> moreVideos = [
+  //     'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
+  //     'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+  //     'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+  //   ];
+  //   setState(() {
+  //     videoUrls.addAll(moreVideos);
+  //   });
+  // }
+
   @override
   void initState() {
-    loadVideoClip();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
+    _pageController = PreloadPageController(initialPage: 0);
+    videoUrls = [
+      'https://cdn.pixabay.com/video/2022/07/24/125314-733046618_tiny.mp4',
+      'https://cdn.pixabay.com/video/2022/09/19/131824-751934493_tiny.mp4',
+      'https://cdn.pixabay.com/video/2022/10/04/133507-756991150_tiny.mp4',
+      'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+      'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
+    ];
     super.initState();
+  }
+
+  void _loadMoreVideos() {
+    List<String> moreVideos = [
+      'https://cdn.pixabay.com/video/2021/08/13/84878-588566505_tiny.mp4',
+      'https://cdn.pixabay.com/video/2023/03/15/154787-808530571_tiny.mp4',
+      'https://cdn.pixabay.com/video/2022/07/24/125314-733046618_tiny.mp4',
+      'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+    ];
+    setState(() {
+      videoUrls.addAll(moreVideos);
+    });
+  }
+
+  Positioned buildPosLikeComment() {
+    return Positioned(
+        bottom: 100,
+        right: 10,
+        width: 50,
+        height: 260,
+        child: likeShareCommentSave());
   }
 
   @override
   Widget build(BuildContext context) {
-    Positioned buildPosLikeComment() {
-      return Positioned(
-          bottom: 100,
-          right: 10,
-          width: 50,
-          height: 260,
-          child: likeShareCommentSave());
-    }
-
     return Scaffold(
       body: PreloadPageView.builder(
         scrollDirection: Axis.vertical,
-        controller: PreloadPageController(),
-        itemBuilder: (BuildContext context, int index) {  
-       return Stack(
-          children: [
-            Container(color: Colors.black,),
-            Videoplayer(url: 'https://flipfit-cdn.akamaized.net/flip_hls/661f570aab9d840019942b80-473e0b/video_h1.m3u8'), // Video Player
-            const CommentWithPublisher(),
-            buildPosLikeComment()
-          ],
-        );
-   }, ),
+        controller: _pageController,
+        itemCount: videoUrls.length,
+        onPageChanged: (value) {
+          setState(() {
+            _currentPage = value;
+            if (value >= videoUrls.length - _threshold) {
+              _loadMoreVideos();
+            }
+          });
+        },
+        itemBuilder: (BuildContext context, int index) {
+          return Stack(
+            children: [
+              Container(color: Colors.black),
+              Center(
+                child: Videoplayer(
+                  isActive: index == _currentPage, // Only active page plays
+                  url: videoUrls[index],
+                ),
+              ),
+              const CommentWithPublisher(),
+              buildPosLikeComment(),
+            ],
+          );
+        },
+      ),
     );
-  }
-
-  void loadVideoClip() async {
-    await videoPlayerController.initialize();
-    videoPlayerController.play();
   }
 
   @override
   void dispose() {
-    videoPlayerController.dispose();
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: SystemUiOverlay.values);
+    _pageController.dispose();
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+        overlays: SystemUiOverlay.values);
     super.dispose();
   }
-
 }
